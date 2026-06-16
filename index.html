@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ckb" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نرخەکان — داشبۆرد</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0b0f1a;
+    --surface:   #131929;
+    --card:      #1a2236;
+    --border:    #1f2d45;
+    --gold:      #f0c040;
+    --silver:    #9ecfea;
+    --green:     #34d399;
+    --red:       #f87171;
+    --text:      #e8eaf0;
+    --muted:     #6b7a99;
+    --radius:    14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Vazirmatn', sans-serif;
+    min-height: 100vh;
+    direction: rtl;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 0.03em;
+  }
+  .logo span { font-size: 1.5rem; }
+
+  .header-meta {
+    text-align: left;
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .header-meta strong { color: var(--text); font-size: 0.88rem; }
+
+  .refresh-btn {
+    background: var(--border);
+    color: var(--text);
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-family: 'Vazirmatn', sans-serif;
+    font-size: 0.82rem;
+    transition: background .2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .refresh-btn:hover { background: #2a3a58; }
+  .refresh-btn.loading .icon { animation: spin .7s linear infinite; display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Status bar ── */
+  .status-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 24px;
+    font-size: 0.76rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  /* ── Main grid ── */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 16px 60px;
+  }
+
+  /* ── Section title ── */
+  .section-title {
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    margin: 32px 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── Dollar banner ── */
+  .dollar-banner {
+    background: linear-gradient(135deg, #1a2b4a, #0f1e36);
+    border: 1px solid #2a4070;
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+
+  .dollar-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .dollar-item .label {
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+  .dollar-item .value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--gold);
+  }
+  .dollar-item .sub { font-size: 0.75rem; color: var(--muted); }
+
+  /* ── Commodity cards ── */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    transition: transform .2s, border-color .2s;
+    animation: fadeIn .4s ease both;
+  }
+  .card:hover { transform: translateY(-2px); border-color: #2a4070; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-icon { font-size: 1.4rem; }
+  .card-title { font-size: 0.95rem; font-weight: 700; }
+  .card-sub { font-size: 0.72rem; color: var(--muted); }
+
+  .card-rows { display: flex; flex-direction: column; gap: 9px; }
+  .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.82rem;
+  }
+  .row .k { color: var(--muted); }
+  .row .val { font-weight: 600; }
+
+  /* karat sub-table */
+  .karat-grid {
+    margin-top: 10px;
+    background: #111827;
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 16px;
+  }
+  .karat-item { font-size: 0.76rem; display: flex; justify-content: space-between; }
+  .karat-item .kl { color: var(--muted); }
+
+  /* highlight colours */
+  .c-gold  { color: var(--gold); }
+  .c-silver{ color: var(--silver); }
+  .c-green { color: var(--green); }
+  .c-blue  { color: #60a5fa; }
+  .c-orange{ color: #fb923c; }
+  .c-purple{ color: #c084fc; }
+  .c-cyan  { color: #22d3ee; }
+
+  /* ── Skeleton loader ── */
+  .skeleton {
+    background: linear-gradient(90deg, var(--card) 25%, #1f2d45 50%, var(--card) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 6px;
+  }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+  /* ── Error ── */
+  .error-box {
+    background: #2a1515;
+    border: 1px solid #7f1d1d;
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    color: var(--red);
+    text-align: center;
+    margin: 40px auto;
+    max-width: 500px;
+  }
+
+  /* ── Footer ── */
+  footer {
+    text-align: center;
+    font-size: 0.72rem;
+    color: var(--muted);
+    padding: 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  @media (max-width: 520px) {
+    header { flex-wrap: wrap; gap: 10px; }
+    .dollar-banner { grid-template-columns: 1fr 1fr; }
+    .cards-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span>📊</span> نرخەکان</div>
+  <div class="header-meta">
+    <strong id="hTime">—</strong><br>
+    <span id="hDate">چاوەڕوان بە...</span>
+  </div>
+  <button class="refresh-btn" id="refreshBtn" onclick="loadPrices()">
+    <span class="icon">↻</span> نوێکردنەوە
+  </button>
+</header>
+
+<div class="status-bar">
+  <div class="dot" id="statusDot"></div>
+  <span id="statusText">داتا دەخوێنرێتەوە...</span>
+</div>
+
+<main id="mainContent">
+  <!-- skeleton -->
+  <div class="section-title">دۆلار</div>
+  <div class="dollar-banner" id="dollarSection">
+    <div class="dollar-item"><div class="label skeleton" style="height:12px;width:80px"></div><div class="value skeleton" style="height:28px;width:120px;margin-top:6px"></div></div>
+    <div class="dollar-item"><div class="label skeleton" style="height:12px;width:60px"></div><div class="value skeleton" style="height:28px;width:80px;margin-top:6px"></div></div>
+    <div class="dollar-item"><div class="label skeleton" style="height:12px;width:60px"></div><div class="value skeleton" style="height:28px;width:80px;margin-top:6px"></div></div>
+    <div class="dollar-item"><div class="label skeleton" style="height:12px;width:100px"></div><div class="value skeleton" style="height:28px;width:130px;margin-top:6px"></div></div>
+  </div>
+  <div class="section-title">کاڵاکان</div>
+  <div class="cards-grid" id="cardsGrid">
+    <div class="card"><div class="card-header"><div class="skeleton" style="width:36px;height:36px;border-radius:50%"></div><div><div class="skeleton" style="width:100px;height:14px"></div><div class="skeleton" style="width:60px;height:10px;margin-top:5px"></div></div></div><div class="skeleton" style="height:80px;border-radius:8px"></div></div>
+    <div class="card"><div class="card-header"><div class="skeleton" style="width:36px;height:36px;border-radius:50%"></div><div><div class="skeleton" style="width:100px;height:14px"></div><div class="skeleton" style="width:60px;height:10px;margin-top:5px"></div></div></div><div class="skeleton" style="height:80px;border-radius:8px"></div></div>
+    <div class="card"><div class="card-header"><div class="skeleton" style="width:36px;height:36px;border-radius:50%"></div><div><div class="skeleton" style="width:100px;height:14px"></div><div class="skeleton" style="width:60px;height:10px;margin-top:5px"></div></div></div><div class="skeleton" style="height:80px;border-radius:8px"></div></div>
+    <div class="card"><div class="card-header"><div class="skeleton" style="width:36px;height:36px;border-radius:50%"></div><div><div class="skeleton" style="width:100px;height:14px"></div><div class="skeleton" style="width:60px;height:10px;margin-top:5px"></div></div></div><div class="skeleton" style="height:80px;border-radius:8px"></div></div>
+    <div class="card"><div class="card-header"><div class="skeleton" style="width:36px;height:36px;border-radius:50%"></div><div><div class="skeleton" style="width:100px;height:14px"></div><div class="skeleton" style="width:60px;height:10px;margin-top:5px"></div></div></div><div class="skeleton" style="height:80px;border-radius:8px"></div></div>
+    <div class="card"><div class="card-header"><div class="skeleton" style="width:36px;height:36px;border-radius:50%"></div><div><div class="skeleton" style="width:100px;height:14px"></div><div class="skeleton" style="width:60px;height:10px;margin-top:5px"></div></div></div><div class="skeleton" style="height:80px;border-radius:8px"></div></div>
+  </div>
+</main>
+
+<footer>دروستکراوە لە لایەن ئەژی صلاح — هەر ١٠ خولەکێک نوێ دەبێتەوە &nbsp;|&nbsp; © 2026</footer>
+
+<script>
+// ══════════════════════════════════════════════
+//  CONFIG — کەناڵەکەت لێرە بنووسە
+// ══════════════════════════════════════════════
+const CHANNEL = "Monetamarketsprice"; // ناوی کەناڵی تێلیگرام (بەبێ @)
+
+// ══════════════════════════════════════════════
+//  FETCH & PARSE
+// ══════════════════════════════════════════════
+async function fetchTelegram() {
+  const r = await fetch('/api/fetch', { signal: AbortSignal.timeout(10000) });
+  if (!r.ok) throw new Error("سێرڤەر وەڵام نەدایەوە");
+  const data = await r.json();
+  if (data.error) throw new Error(data.error);
+  return data.text;
+}
+
+function num(text, ...patterns) {
+  for (const pat of patterns) {
+    const m = text.match(pat);
+    if (m) return m[1].replace(/,/g,'').trim();
+  }
+  return null;
+}
+
+function parse(text) {
+  const d = {};
+
+  // --- Dollar block ---
+  d.iqd = num(text, /دینار عێراقی\s*:\s*([\d,]+)/);
+  d.eur = num(text, /یۆرۆ\s*:\s*€([\d,]+)/);
+  d.gbp = num(text, /پاوەند\s*:\s*£([\d,]+)/);
+  d.irr = num(text, /تمەنی ئێرانی\s*:\s*([\d,]+)/);
+
+  // --- Gold ---
+  const goldBlock = text.match(/Gold[\s\S]*?(?=Silver|$)/)?.[0] || text;
+  d.goldOz     = num(goldBlock, /ئۆنسە\s*:\s*\$([\d,]+)/);
+  d.goldGram   = num(goldBlock, /گرام\s*:\s*\$([\d,]+)/);
+  d.goldMisqal = num(goldBlock, /مسقاڵ\s*:\s*([\d,]+)/);
+  d.goldKilo   = num(goldBlock, /کیلۆ\s*:\s*\$([\d,]+)/);
+  d.k18 = num(text, /عەیارە\s*18\s*:\s*([\d,]+)/);
+  d.k21 = num(text, /عەیارە\s*21\s*:\s*([\d,]+)/);
+  d.k22 = num(text, /عەیارە\s*22\s*:\s*([\d,]+)/);
+  d.k24 = num(text, /عەیارە\s*24\s*:\s*([\d,]+)/);
+
+  // --- Silver ---
+  const silvBlock = text.match(/Silver[\s\S]*?(?=Bitcoin|$)/)?.[0] || '';
+  d.silvOz     = num(silvBlock, /ئۆنسە\s*:\s*\$([\d,]+)/);
+  d.silvGram   = num(silvBlock, /گرام\s*:\s*\$([\d,]+)/);
+  d.silvMisqal = num(silvBlock, /مسقاڵ\s*:\s*([\d,]+)/);
+  d.silvKilo   = num(silvBlock, /کیلۆ\s*:\s*\$([\d,]+)/);
+
+  // --- BTC ---
+  const btcBlock = text.match(/Bitcoin[\s\S]*?(?=Ethereum|$)/)?.[0] || '';
+  d.btcUsd = num(btcBlock, /دۆلار\s*:\s*\$([\d,]+)/);
+  d.btcIqd = num(btcBlock, /دینار\s*:\s*([\d,]+)/);
+
+  // --- ETH ---
+  const ethBlock = text.match(/Ethereum[\s\S]*?(?=Copper|Platinum|$)/)?.[0] || '';
+  d.ethUsd = num(ethBlock, /دۆلار\s*:\s*\$([\d,]+)/);
+  d.ethIqd = num(ethBlock, /دینار\s*:\s*([\d,]+)/);
+
+  // --- Platinum ---
+  const ptBlock = text.match(/Platinum[\s\S]*?(?=Brent|$)/)?.[0] || '';
+  d.ptUsd = num(ptBlock, /دۆلار\s*:\s*\$([\d,]+)/);
+  d.ptIqd = num(ptBlock, /دینار\s*:\s*([\d,]+)/);
+
+  // --- Brent ---
+  const brBlock = text.match(/Brent[\s\S]*$/)?.[0] || '';
+  d.brUsd = num(brBlock, /دۆلار\s*:\s*\$([\d,]+)/);
+  d.brIqd = num(brBlock, /دینار\s*:\s*([\d,]+)/);
+
+  return d;
+}
+
+// ══════════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════════
+function fmt(v, suffix='') {
+  if (!v) return '<span style="color:var(--muted)">—</span>';
+  const n = parseInt(v);
+  return (isNaN(n) ? v : n.toLocaleString()) + (suffix ? ' '+suffix : '');
+}
+
+function renderDollar(d) {
+  return `
+    <div class="dollar-item">
+      <div class="label">١٠٠ دۆلار بە دینار عێراقی</div>
+      <div class="value c-gold">${fmt(d.iqd, 'د.ع')}</div>
+    </div>
+    <div class="dollar-item">
+      <div class="label">یۆرۆ</div>
+      <div class="value">€${fmt(d.eur)}</div>
+    </div>
+    <div class="dollar-item">
+      <div class="label">پاوەند</div>
+      <div class="value">£${fmt(d.gbp)}</div>
+    </div>
+    <div class="dollar-item">
+      <div class="label">تمەنی ئێرانی</div>
+      <div class="value" style="font-size:1rem">${fmt(d.irr, 'تمەن')}</div>
+    </div>`;
+}
+
+function card(icon, title, sub, colorClass, rows, extra='') {
+  const rowsHtml = rows.map(([k,v,c])=>`
+    <div class="row"><span class="k">${k}</span><span class="val ${c||''}">${v}</span></div>`).join('');
+  return `
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">${icon}</div>
+      <div><div class="card-title">${title}</div><div class="card-sub c-${colorClass}">${sub}</div></div>
+    </div>
+    <div class="card-rows">${rowsHtml}</div>
+    ${extra}
+  </div>`;
+}
+
+function renderCards(d) {
+  const gold = card('🥇','زێڕ','Gold (XAU)','gold',[
+    ['یەک ئۆنسە', `$${fmt(d.goldOz)}`, 'c-gold'],
+    ['یەک گرام',  `$${fmt(d.goldGram)}`,''],
+    ['یەک مسقاڵ', `${fmt(d.goldMisqal,'د.ع')}`, ''],
+    ['یەک کیلۆ',  `$${fmt(d.goldKilo)}`, ''],
+  ], `<div class="karat-grid">
+    <div class="karat-item"><span class="kl">عەیارە ١٨</span><span>${fmt(d.k18,'د.ع')}</span></div>
+    <div class="karat-item"><span class="kl">عەیارە ٢١</span><span>${fmt(d.k21,'د.ع')}</span></div>
+    <div class="karat-item"><span class="kl">عەیارە ٢٢</span><span>${fmt(d.k22,'د.ع')}</span></div>
+    <div class="karat-item"><span class="kl">عەیارە ٢٤</span><span>${fmt(d.k24,'د.ع')}</span></div>
+  </div>`);
+
+  const silver = card('🥈','زیو','Silver (XAG)','silver',[
+    ['یەک ئۆنسە', `$${fmt(d.silvOz)}`, 'c-silver'],
+    ['یەک گرام',  `$${fmt(d.silvGram)}`,''],
+    ['یەک مسقاڵ', `${fmt(d.silvMisqal,'د.ع')}`, ''],
+    ['یەک کیلۆ',  `$${fmt(d.silvKilo)}`, ''],
+  ]);
+
+  const btc = card('₿','بیتکۆین','Bitcoin (BTC)','orange',[
+    ['دۆلار', `$${fmt(d.btcUsd)}`, 'c-orange'],
+    ['دینار', `${fmt(d.btcIqd,'د.ع')}`, ''],
+  ]);
+
+  const eth = card('⟠','ئیتەریۆم','Ethereum (ETH)','purple',[
+    ['دۆلار', `$${fmt(d.ethUsd)}`, 'c-purple'],
+    ['دینار', `${fmt(d.ethIqd,'د.ع')}`, ''],
+  ]);
+
+
+  const pt = card('⬜','پلاتینیۆم','Platinum (XPT)','silver',[
+    ['دۆلار', `$${fmt(d.ptUsd)}`, 'c-silver'],
+    ['دینار', `${fmt(d.ptIqd,'د.ع')}`, ''],
+  ]);
+
+  const br = card('🛢️','نەوتی برێنت','Brent Oil','cyan',[
+    ['دۆلار', `$${fmt(d.brUsd)}`, 'c-cyan'],
+    ['دینار', `${fmt(d.brIqd,'د.ع')}`, ''],
+  ]);
+
+  return gold + silver + btc + eth + pt + br;
+}
+
+// ══════════════════════════════════════════════
+//  MAIN LOAD
+// ══════════════════════════════════════════════
+async function loadPrices() {
+  const btn  = document.getElementById('refreshBtn');
+  const stat = document.getElementById('statusText');
+  const dot  = document.getElementById('statusDot');
+
+  btn.classList.add('loading');
+  stat.textContent = 'داتا دەخوێنرێتەوە...';
+  dot.style.background = 'var(--gold)';
+
+  try {
+    const raw  = await fetchTelegram();
+    const data = parse(raw);
+
+    const now  = new Date();
+    const time = now.toLocaleTimeString('ckb-IQ', {hour:'2-digit', minute:'2-digit'});
+    const date = now.toLocaleDateString('ckb-IQ', {year:'numeric', month:'2-digit', day:'2-digit'});
+
+    document.getElementById('hTime').textContent = time;
+    document.getElementById('hDate').textContent = date;
+    document.getElementById('dollarSection').innerHTML = renderDollar(data);
+    document.getElementById('cardsGrid').innerHTML     = renderCards(data);
+
+    stat.textContent = `دوایین نوێکردنەوە: ${time}`;
+    dot.style.background = 'var(--green)';
+  } catch(e) {
+    document.getElementById('cardsGrid').innerHTML =
+      `<div class="error-box" style="grid-column:1/-1">⚠️ ${e.message}<br><small>CHANNEL = "${CHANNEL}" دروستە؟</small></div>`;
+    stat.textContent = 'هەڵە ڕوویدا';
+    dot.style.background = 'var(--red)';
+  } finally {
+    btn.classList.remove('loading');
+  }
+}
+
+// auto-refresh every 10 min
+loadPrices();
+setInterval(loadPrices, 600_000);
+</script>
+</body>
+</html>
