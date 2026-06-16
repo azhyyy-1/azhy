@@ -291,7 +291,7 @@ const CHANNEL = "Monetamarketsprice"; // ناوی کەناڵی تێلیگرام 
 //  FETCH & PARSE
 // ══════════════════════════════════════════════
 async function fetchTelegram() {
-  const r = await fetch('/api/fetch', { signal: AbortSignal.timeout(10000) });
+  const r = await fetch('/.netlify/functions/fetch', { signal: AbortSignal.timeout(10000) });
   if (!r.ok) throw new Error("سێرڤەر وەڵام نەدایەوە");
   const data = await r.json();
   if (data.error) throw new Error(data.error);
