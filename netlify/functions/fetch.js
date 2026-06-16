@@ -1,36 +1,43 @@
-const handler = async (event, context) => {
-  const CHANNEL = "Monetamarketsprice";
-  const url = https://t.me/s/${CHANNEL};
-
-  try {
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml",
-      }
-    });
-
-    if (!response.ok) {
-      return { statusCode: 502, headers: { "Access-Control-Allow-Origin": "*" }, body: JSON.stringify({ error: "فیچ نەکرا" }) };
+exports.handler = async function(event, context) {
+  var CHANNEL = "Monetamarketsprice";
+  var url = "https://t.me/s/" + CHANNEL;
+  
+  var response = await fetch(url, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 Chrome/120"
     }
-
-    const html = await response.text();
-    const msgs = [...html.matchAll(/<div class="tgme_widget_message_text[^"]*"[^>]*>([\s\S]*?)<\/div>/g)];
-    if (!msgs.length) {
-      return { statusCode: 404, headers: { "Access-Control-Allow-Origin": "*" }, body: JSON.stringify({ error: "پەیامێک نەدۆزرایەوە" }) };
-    }
-
-    const raw = msgs[msgs.length - 1][1]
-      .replace(/<br\s*\/?>/gi, '\n')
-      .replace(/<[^>]+>/g, '')
-      .replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&nbsp;/g,' ')
-      .trim();
-
-    return { statusCode: 200, headers: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" }, body: JSON.stringify({ text: raw }) };
-
-  } catch (e) {
-    return { statusCode: 500, headers: { "Access-Control-Allow-Origin": "*" }, body: JSON.stringify({ error: e.message }) };
+  });
+  
+  var html = await response.text();
+  
+  var matches = [];
+  var regex = /class="tgme_widget_message_text[^"]*"[^>]*>([\s\S]*?)<\/div>/g;
+  var match;
+  while ((match = regex.exec(html)) !== null) {
+    matches.push(match[1]);
   }
+  
+  if (matches.length === 0) {
+    return {
+      statusCode: 404,
+      headers: {"Access-Control-Allow-Origin": "*"},
+      body: JSON.stringify({error: "not found"})
+    };
+  }
+  
+  var raw = matches[matches.length - 1]
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&nbsp;/g, " ")
+    .trim();
+  
+  return {
+    statusCode: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({text: raw})
+  };
 };
-
-exports.handler = handler;
